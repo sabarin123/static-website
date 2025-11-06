@@ -1,0 +1,55 @@
+/* Reset some default styles */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+/* Body styling */
+body {
+    height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background: linear-gradient(135deg, #6a11cb, #2575fc);
+    color: #fff;
+    text-align: center;
+}
+
+/* Container for content */
+.container {
+    background: rgba(0, 0, 0, 0.5);
+    padding: 50px 30px;
+    border-radius: 15px;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
+}
+
+/* Heading style */
+h1 {
+    font-size: 2.5rem;
+    margin-bottom: 20px;
+    text-shadow: 2px 2px 5px rgba(0,0,0,0.3);
+}
+
+/* Paragraph style */
+p {
+    font-size: 1.2rem;
+    margin-bottom: 30px;
+}
+
+/* Button style */
+.btn {
+    text-decoration: none;
+    background-color: #ff6b6b;
+    color: #fff;
+    padding: 12px 25px;
+    border-radius: 50px;
+    transition: all 0.3s ease;
+    font-weight: bold;
+}
+
+.btn:hover {
+    background-color: #ff4757;
+    transform: scale(1.05);
+}
