@@ -1,132 +1,163 @@
-My Static Website
+# My Static Website
 
-A simple static website built with HTML and CSS, deployed to Amazon S3 and served via Amazon CloudFront (CDN).
+A simple **static website** built using **HTML and CSS** and deployed to **Amazon S3**, with global content delivery using **Amazon CloudFront**.
 
-Table of contents
+---
 
-Overview
+## 📌 Table of Contents
 
-Prerequisites
+1. Overview  
+2. Prerequisites  
+3. Project Structure  
+4. Test Locally  
+5. Deployment Options  
+   - Option A — Quick (Public S3 Website Hosting)  
+   - Option B — Recommended (Private S3 + CloudFront)  
+6. Example Bucket Policy (for CloudFront OAC)  
+7. CloudFront Cache Invalidation  
+8. (Optional) Custom Domain + HTTPS  
+9. Troubleshooting  
+10. Security Notes  
+11. Author  
 
-Project structure
+---
 
-Test locally
+## 🔍 Overview
 
-Two deployment options
+This project contains a basic static website and step-by-step instructions for deploying it to AWS.  
+You will learn:
 
-Option A — Quick: public S3 website (fast, not for production)
+- How to host static content in **Amazon S3**
+- How to deliver it globally via **Amazon CloudFront**
+- The difference between a **quick/demo setup** and a **secure production setup**
 
-Option B — Recommended: private S3 + CloudFront (secure, production-ready)
+---
 
-Example S3 bucket policy (for CloudFront access)
+## ✅ Prerequisites
 
-CloudFront cache invalidation
+Before starting, ensure you have:
 
-Custom domain & HTTPS (short guide)
+| Requirement | Details |
+|------------|---------|
+| AWS Account | With access to S3 and CloudFront resources |
+| AWS Console Login | (No CLI required for basic steps) |
+| Git Installed | To manage your project repository |
+| (Optional) AWS CLI | If you prefer command-line uploads |
 
-Automation (GitHub Actions example)
-
-Troubleshooting & FAQ
-
-Security notes
-
-Author
-
-Overview
-
-This repository contains a small static website (HTML + CSS). This README shows clear, copy-pasteable steps to:
-
-host the site on AWS S3, and
-
-(recommended) serve it securely and fast with CloudFront.
-
-Prerequisites
-
-Before you start:
-
-An AWS account with permissions to create S3 buckets, CloudFront distributions, ACM certificates, and IAM/policies.
-
-(Optional, for CLI steps) AWS CLI installed and configured:
-
+If using AWS CLI, configure it:
+```bash
 aws configure
-
-
-Basic Git/GitHub knowledge if you want to connect this to a repo/CI.
-
-Project structure
+📁 Project Structure
 static-website/
-├── index.html        # Main HTML file
+├── index.html        # Main HTML page
 ├── style.css         # Stylesheet
-└── README.md         # Project documentation (this file)
-
-Test locally
-
-Open index.html in your browser to view the site locally. No server required for simple static files.
-
-If you want a local static-server (for testing relative paths), you can use Python:
-
+└── README.md         # Documentation (this file)
+🖥️ Test Locally (Before Uploading)
+Open the index.html file directly in your browser.
+OR run a simple local server
 # Python 3
 python -m http.server 8000
-# then open http://localhost:8000
+🚀 Deployment Options
 
-Two deployment options
-Option A — Quick: public S3 website (fast, for demos)
+You have two ways to host this website on AWS:
 
-Use when: quick demo or prototype. Not recommended for production because objects are publicly accessible directly from S3.
+| Option                 | Recommended For | Security         | Speed        | HTTPS Support |
+| ---------------------- | --------------- | ---------------- | ------------ | ------------- |
+| Option A (Quick)       | Demos, Learning | ❌ Public Bucket  | Medium       | ❌ Not Native  |
+| Option B (Recommended) | Production      | ✅ Private Bucket | ✅ Global CDN | ✅ Full HTTPS  |
 
-Console steps (fast):
+✅ Option A — Quick: Public S3 Website (Simple but not secure)
 
-Create an S3 bucket (unique global name) in a region.
+Use only for learning / demos.
 
-In Properties → Static website hosting, enable and set index.html as index document.
+Go to AWS Console → S3 → Create Bucket
 
-In Permissions, disable Block Public Access for the bucket (only for demo).
+Give bucket name (example: my-static-site-demo)
 
-Add a bucket policy that allows s3:GetObject for arn:aws:s3:::your-bucket-name/*.
+Disable Block Public Access
 
-Upload index.html and style.css.
+Upload index.html and style.css
 
-Use the S3 website endpoint (shown in Properties) to open the site.
-Option B — Recommended: private S3 + CloudFront (secure, production)
+Go to Properties → Static website hosting
 
-Use when: production, custom domain, HTTPS, security best-practices.
+Enable hosting
 
-High-level idea: Keep the S3 bucket private. Create a CloudFront distribution and configure an Origin Access Control (OAC) so only CloudFront may read objects from the bucket. CloudFront serves your content from edge locations with HTTPS and caching.
+Set Index document: index.html
 
-Console step-by-step (recommended for beginners)
+Add public read bucket policy:
+{
+  "Version": "2012-10-17",
+  "Statement": [{
+    "Effect": "Allow",
+    "Principal": "*",
+    "Action": "s3:GetObject",
+    "Resource": "arn:aws:s3:::your-bucket-name/*"
+  }]
+}
 
-Create a private S3 bucket
+Access the site using the S3 website endpoint
+Example:
+http://your-bucket-name.s3-website-us-east-1.amazonaws.com
 
-Name: your-bucket-name (replace placeholder)
+⭐ Option B — Recommended: Private S3 + CloudFront (Secure + HTTPS + Fast)
 
-Keep Block all public access ON (default) so the bucket is private.
+This is the production-ready method.
 
-Upload files
+Step 1: Create S3 Bucket (Private)
 
-Upload index.html and style.css to the bucket.
+Create bucket in S3
 
-Do not set public ACLs.
+Keep block public access enabled (default)
 
-Create a CloudFront distribution
+Upload index.html & style.css
 
-Console → CloudFront → Create distribution.
+Step 2: Create CloudFront Distribution
 
-Origin domain: pick your S3 bucket (choose the bucket resource, not the website endpoint).
+Go to CloudFront → Create Distribution
 
-Origin access: choose to create an Origin Access Control (OAC) (console will guide you). OAC is the modern replacement for OAI.
+Select S3 bucket as origin (choose bucket, not website endpoint)
 
-Default root object: index.html.
+Enable Origin Access Control (OAC) — let CloudFront create it
 
-Viewer protocol policy: Redirect HTTP to HTTPS (recommended).
+Set default root object to:
 
-Cache settings: Default is fine for now.
+index.html
 
-Create distribution (deploys in a few minutes).
+🔒 Security Notes
 
-Allow CloudFront to read the S3 bucket
+Avoid public S3 buckets in production.
 
-When creating the OAC via console, CloudFront often offers to automatically update the bucket policy for you. If you do it manually, add a bucket policy that allows the CloudFront principal (OAI/OAC) to s3:GetObject on arn:aws:s3:::your-bucket-name/*. Example policy is below.
+Always use CloudFront with HTTPS.
 
-Test
+Use OAC instead of legacy OAI (new best practice).
+Create distribution (wait ~5 mins to deploy)
 
-Use CloudFront domain name (e.g. d1234abcd.cloudfront.net) to open your site.
+Step 3: Apply Bucket Policy (Allow CloudFront Only)
+
+AWS may suggest auto-policy. If not, use this:
+
+{
+  "Version": "2012-10-17",
+  "Statement": [{
+    "Effect": "Allow",
+    "Principal": {
+      "Service": "cloudfront.amazonaws.com"
+    },
+    "Action": "s3:GetObject",
+    "Resource": "arn:aws:s3:::your-bucket-name/*",
+    "Condition": {
+      "StringEquals": {
+        "AWS:SourceArn": "arn:aws:cloudfront::YOUR_AWS_ACCOUNT_ID:distribution/YOUR_DISTRIBUTION_ID"
+      }
+    }
+  }]
+}
+
+Step 4: Access Your Website
+
+Copy your CloudFront domain:
+
+https://dxxxxxxxxxx.cloudfront.net
+✍️ Author
+Sabari
+AWS & DevOps Learner | Building Real Hands-On Projects
